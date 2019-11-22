@@ -274,43 +274,6 @@ my %version = ();
 
 collect_version_numbers(\%config, \%version);
 
-sub collect_version_numbers
-{
-	my ($config, $version) = @_;
-
-	collect_information(
-		collect_from_file(catfile($srcdir,'VERSION')),
-		qr/\s*(\w+)\s*=\s*(.*?)\s*$/ =>
-		    sub {
-		        # Only define it if there is a value at all
-		        $version->{uc $1} = $2 if $2 ne '';
-		    },
-		"OTHERWISE" =>
-		    sub { die "Something wrong with this line:\n$_\nin $srcdir/VERSION" },
-		);
-
-	$config->{major} = $version->{MAJOR} // 'unknown';
-	$config->{minor} = $version->{MINOR} // 'unknown';
-	$config->{patch} = $version->{PATCH} // 'unknown';
-	$config->{prerelease} =
-		defined $version->{PRE_RELEASE_TAG} ? "-$version{PRE_RELEASE_TAG}" : '';
-	$config->{build_metadata} =
-		defined $version->{BUILD_METADATA} ? "+$version{BUILD_METADATA}" : '';
-	$config->{shlib_version} = $version->{SHLIB_VERSION} // 'unknown';
-	$config->{release_date} = $version->{RELEASE_DATE} // 'xx XXX xxxx';
-
-	$config->{version} = join('.', @{$config}{'major','minor','patch'});
-	$config->{full_version} = join('',
-		@{$config}{'version','prerelease','build_metadata'}
-	);
-
-	die "erroneous version information in VERSION: ",
-		"$config{version}, $config{shlib_version}\n"
-		unless (defined $version{MAJOR}
-		        && defined $version{MINOR}
-		        && defined $version{PATCH}
-		        && defined $version{SHLIB_VERSION});
-}
 
 
 # Collect target configurations
@@ -3241,3 +3204,45 @@ sub tokenize {
     }
     return @result;
 }
+
+#####
+# "Migrated to Subroutines"
+
+sub collect_version_numbers
+{
+	my ($config, $version) = @_;
+
+	collect_information(
+		collect_from_file(catfile($srcdir,'VERSION')),
+		qr/\s*(\w+)\s*=\s*(.*?)\s*$/ =>
+		    sub {
+		        # Only define it if there is a value at all
+		        $version->{uc $1} = $2 if $2 ne '';
+		    },
+		"OTHERWISE" =>
+		    sub { die "Something wrong with this line:\n$_\nin $srcdir/VERSION" },
+		);
+
+	$config->{major} = $version->{MAJOR} // 'unknown';
+	$config->{minor} = $version->{MINOR} // 'unknown';
+	$config->{patch} = $version->{PATCH} // 'unknown';
+	$config->{prerelease} =
+		defined $version->{PRE_RELEASE_TAG} ? "-$version{PRE_RELEASE_TAG}" : '';
+	$config->{build_metadata} =
+		defined $version->{BUILD_METADATA} ? "+$version{BUILD_METADATA}" : '';
+	$config->{shlib_version} = $version->{SHLIB_VERSION} // 'unknown';
+	$config->{release_date} = $version->{RELEASE_DATE} // 'xx XXX xxxx';
+
+	$config->{version} = join('.', @{$config}{'major','minor','patch'});
+	$config->{full_version} = join('',
+		@{$config}{'version','prerelease','build_metadata'}
+	);
+
+	die "erroneous version information in VERSION: ",
+		"$config{version}, $config{shlib_version}\n"
+		unless (defined $version{MAJOR}
+		        && defined $version{MINOR}
+		        && defined $version{PATCH}
+		        && defined $version{SHLIB_VERSION});
+}
+
